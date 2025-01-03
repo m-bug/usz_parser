@@ -1,33 +1,41 @@
-import webbrowser
 import random
+import requests
+from PIL import Image
+from io import BytesIO
 
-def open_random_link_from_file(filename):
+def fetch_image_from_url(url):
     """
-    Opens a random link from the provided file in the default web browser.
-
-    :param filename: The path to the file containing the links.
+    Fetches an image from the given URL and returns a PIL Image object.
     """
     try:
-        with open(filename, 'r') as file:
-            links = file.readlines()
-        
-        if links:
-            # Strip any extra whitespace or newlines from the links
-            links = [link.strip() for link in links]
-            
-            # Select a random link
-            selected_link = random.choice(links)
-            print(f"Opening: {selected_link}")
-            
-            # Open the link in the default web browser
-            webbrowser.open(selected_link)
-        else:
-            print("No links found in the file.")
-    
-    except IOError as e:
-        print(f"Failed to read the file: {e}")
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+        return img
+    except requests.RequestException as e:
+        print(f"Error fetching image from {url}: {e}")
+        return None
+
+def display_image(img):
+    """
+    Displays the given PIL Image object.
+    """
+    if img:
+        img.show()
+    else:
+        print("No image to display.")
+
+def main():
+    # Read all links from the file
+    with open('all_links.txt', 'r') as file:
+        links = file.readlines()
+
+    # Choose a random link
+    random_link = random.choice(links).strip()
+
+    # Fetch and display the image
+    img = fetch_image_from_url(random_link)
+    display_image(img)
 
 if __name__ == "__main__":
-    # Specify the path to your all_links.txt file
-    file_path = "all_links.txt"
-    open_random_link_from_file(file_path)
+    main()
