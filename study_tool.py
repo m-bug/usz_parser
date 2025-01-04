@@ -72,6 +72,12 @@ def generate_html(random_image_url, original_link):
                 margin: 0;
                 padding: 20px;
                 text-align: center;
+                background-color: #f4f7f6;
+            }}
+            h1 {{
+                color: #333;
+                font-size: 2rem;
+                margin-bottom: 20px;
             }}
             button {{
                 margin: 20px;
@@ -86,21 +92,21 @@ def generate_html(random_image_url, original_link):
             button:hover {{
                 background-color: #0056b3;
             }}
-            .loading {{
-                font-size: 18px;
-                color: #888;
-                margin-top: 20px;
-            }}
             .message {{
                 font-size: 18px;
                 color: green;
                 margin-top: 20px;
             }}
+            .loading {{
+                font-size: 18px;
+                color: #888;
+                margin-top: 20px;
+            }}
         </style>
     </head>
     <body>
-        <h1>Study Tool</h1>
-        <p>Click a button below to open the respective link:</p>
+        <h1>Study Tool: Guess the Image</h1>
+        <p>Click a button below to view the image and the solution.</p>
         <div>
             <button onclick="window.open('{random_image_url}', '_blank')">View Random Image</button>
             <button onclick="window.open('{original_link}', '_blank')">View Solution</button>
@@ -108,6 +114,7 @@ def generate_html(random_image_url, original_link):
         <button onclick="refreshPage()">Get Another Random Link</button>
         <div id="loading" class="loading"></div>
         <div id="message" class="message" style="display: none;">Random Link Updated!</div>
+
         <script>
             function refreshPage() {{
                 document.getElementById('loading').innerText = 'Loading...';
