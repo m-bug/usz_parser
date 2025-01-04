@@ -1,0 +1,57 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Study Tool</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            iframe {
+                width: 90%;
+                height: 70vh;
+                border: 2px solid #ccc;
+                margin-top: 20px;
+            }
+            .solution {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                max-width: 90%;
+            }
+            .solution.hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Study Tool</h1>
+        <iframe src="https://histodb11.usz.ch/olat/img_zif.php?img=s_vii_26" frameborder="0"></iframe>
+        <div class="solution hidden" id="solution">
+            <h2>Solution</h2>
+            <p>Solution for s_vii_26</p>
+        </div>
+        <button onclick="toggleSolution()">Show Solution</button>
+        <script>
+            function toggleSolution() {
+                const solutionDiv = document.getElementById('solution');
+                if (solutionDiv.classList.contains('hidden')) {
+                    solutionDiv.classList.remove('hidden');
+                } else {
+                    solutionDiv.classList.add('hidden');
+                }
+            }
+        </script>
+    </body>
+    </html>
+    
