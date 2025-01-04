@@ -9,47 +9,54 @@
             body {
                 font-family: Arial, sans-serif;
                 margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
+                padding: 20px;
+                text-align: center;
             }
-            iframe {
-                width: 90%;
-                height: 70vh;
-                border: 2px solid #ccc;
-                margin-top: 20px;
-            }
-            .solution {
-                margin-top: 20px;
-                padding: 10px;
-                background-color: #f9f9f9;
-                border: 1px solid #ddd;
+            button {
+                margin: 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                background-color: #007BFF;
+                color: white;
                 border-radius: 5px;
-                max-width: 90%;
+                cursor: pointer;
             }
-            .solution.hidden {
-                display: none;
+            button:hover {
+                background-color: #0056b3;
+            }
+            .loading {
+                font-size: 18px;
+                color: #888;
+                margin-top: 20px;
+            }
+            .message {
+                font-size: 18px;
+                color: green;
+                margin-top: 20px;
             }
         </style>
     </head>
     <body>
         <h1>Study Tool</h1>
-        <iframe src="https://histodb11.usz.ch/olat/img_zif.php?img=s_vii_26" frameborder="0"></iframe>
-        <div class="solution hidden" id="solution">
-            <h2>Solution</h2>
-            <p>Solution for s_vii_26</p>
+        <p>Click a button below to open the respective link:</p>
+        <div>
+            <button onclick="window.open('https://histodb11.usz.ch/olat/img_zif.php?img=hb_4_t-03', '_blank')">View Random Image</button>
+            <button onclick="window.open('https://histodb11.usz.ch/pages/hb_4_t-03.html#en', '_blank')">View Solution</button>
         </div>
-        <button onclick="toggleSolution()">Show Solution</button>
+        <button onclick="refreshPage()">Get Another Random Link</button>
+        <div id="loading" class="loading"></div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
         <script>
-            function toggleSolution() {
-                const solutionDiv = document.getElementById('solution');
-                if (solutionDiv.classList.contains('hidden')) {
-                    solutionDiv.classList.remove('hidden');
-                } else {
-                    solutionDiv.classList.add('hidden');
-                }
+            function refreshPage() {
+                document.getElementById('loading').innerText = 'Loading...';
+                document.getElementById('message').style.display = 'none';
+
+                fetch('/refresh')
+                    .then(response => response.text())
+                    .then(data => {
+                        document.body.innerHTML = data;
+                    });
             }
         </script>
     </body>

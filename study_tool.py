@@ -2,7 +2,14 @@ import random
 import os
 from urllib.parse import urlparse
 import webbrowser
-import keyboard  # To detect key presses
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import threading
+
+# File paths
+ALL_LINKS_FILE = 'all_links.txt'
+VISITED_LINKS_FILE = 'visited_links.txt'
+HTML_FILE = 'study_tool.html'
+BASE_URL = "https://histodb11.usz.ch/olat/img_zif.php?img="
 
 
 def extract_image_name_from_url(url):
@@ -18,7 +25,6 @@ def build_image_url(image_name):
     """
     Builds the image-only URL using the image name.
     """
-    BASE_URL = "https://histodb11.usz.ch/olat/img_zif.php?img="
     return BASE_URL + image_name
 
 
@@ -49,9 +55,9 @@ def load_visited_links(visited_file):
         return []
 
 
-def generate_html(image_url, solution_text):
+def generate_html(random_image_url, original_link):
     """
-    Generates an HTML file with an iframe and additional solution text.
+    Generates an HTML file with two buttons and a refresh option.
     """
     html_content = f"""
     <!DOCTYPE html>
@@ -64,69 +70,70 @@ def generate_html(image_url, solution_text):
             body {{
                 font-family: Arial, sans-serif;
                 margin: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
+                padding: 20px;
+                text-align: center;
             }}
-            iframe {{
-                width: 90%;
-                height: 70vh;
-                border: 2px solid #ccc;
-                margin-top: 20px;
-            }}
-            .solution {{
-                margin-top: 20px;
-                padding: 10px;
-                background-color: #f9f9f9;
-                border: 1px solid #ddd;
+            button {{
+                margin: 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                background-color: #007BFF;
+                color: white;
                 border-radius: 5px;
-                max-width: 90%;
+                cursor: pointer;
             }}
-            .solution.hidden {{
-                display: none;
+            button:hover {{
+                background-color: #0056b3;
+            }}
+            .loading {{
+                font-size: 18px;
+                color: #888;
+                margin-top: 20px;
+            }}
+            .message {{
+                font-size: 18px;
+                color: green;
+                margin-top: 20px;
             }}
         </style>
     </head>
     <body>
         <h1>Study Tool</h1>
-        <iframe src="{image_url}" frameborder="0"></iframe>
-        <div class="solution hidden" id="solution">
-            <h2>Solution</h2>
-            <p>{solution_text}</p>
+        <p>Click a button below to open the respective link:</p>
+        <div>
+            <button onclick="window.open('{random_image_url}', '_blank')">View Random Image</button>
+            <button onclick="window.open('{original_link}', '_blank')">View Solution</button>
         </div>
-        <button onclick="toggleSolution()">Show Solution</button>
+        <button onclick="refreshPage()">Get Another Random Link</button>
+        <div id="loading" class="loading"></div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
         <script>
-            function toggleSolution() {{
-                const solutionDiv = document.getElementById('solution');
-                if (solutionDiv.classList.contains('hidden')) {{
-                    solutionDiv.classList.remove('hidden');
-                }} else {{
-                    solutionDiv.classList.add('hidden');
-                }}
+            function refreshPage() {{
+                document.getElementById('loading').innerText = 'Loading...';
+                document.getElementById('message').style.display = 'none';
+
+                fetch('/refresh')
+                    .then(response => response.text())
+                    .then(data => {{
+                        document.body.innerHTML = data;
+                    }});
             }}
         </script>
     </body>
     </html>
     """
-    html_file = "study_tool.html"
-    with open(html_file, 'w', encoding='utf-8') as file:
+    with open(HTML_FILE, 'w', encoding='utf-8') as file:
         file.write(html_content)
-    return html_file
 
 
 def browse_next_link():
     """
-    Selects the next random link, generates an HTML file, and opens it in the browser.
+    Selects the next random link, generates an HTML file.
     """
-    # File paths
-    all_links_file = 'all_links.txt'
-    visited_links_file = 'visited_links.txt'
-
     # Load links
-    all_links = load_links(all_links_file)
-    visited_links = load_visited_links(visited_links_file)
+    all_links = load_links(ALL_LINKS_FILE)
+    visited_links = load_visited_links(VISITED_LINKS_FILE)
 
     # Get unvisited links
     unvisited_links = [link for link in all_links if link not in visited_links]
@@ -135,35 +142,65 @@ def browse_next_link():
     if not unvisited_links:
         print("All links have been visited. Resetting...")
         unvisited_links = all_links
-        with open(visited_links_file, 'w') as file:
+        with open(VISITED_LINKS_FILE, 'w') as file:
             file.truncate(0)  # Clear the file
 
     # Choose a random link from unvisited links
     random_link = random.choice(unvisited_links)
 
-    # Extract image name and build image URL
+    # Extract image name and build image-only URL
     image_name = extract_image_name_from_url(random_link)
-    image_url = build_image_url(image_name)
+    random_image_url = build_image_url(image_name)
 
     # Generate a custom HTML file
-    solution_text = f"Solution for {image_name}"  # Customize as needed
-    html_file = generate_html(image_url, solution_text)
+    generate_html(random_image_url, random_link)
 
-    print(f"Opening study tool for image: {image_name}")
-
-    # Open the generated HTML file in the default browser
-    webbrowser.open(f"file://{os.path.abspath(html_file)}", new=2)  # 'new=2' opens in a new tab, if possible
+    print(f"Generated HTML for image: {image_name}")
 
     # Save the link to visited_links.txt
-    save_visited_link(random_link, visited_links_file)
+    save_visited_link(random_link, VISITED_LINKS_FILE)
+
+
+def start_server():
+    """
+    Starts an HTTP server to serve the HTML file.
+    """
+    class CustomHandler(SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == "/refresh":
+                browse_next_link()
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                with open(HTML_FILE, 'r', encoding='utf-8') as file:
+                    self.wfile.write(file.read().encode('utf-8'))
+            else:
+                super().do_GET()
+
+    server = HTTPServer(('localhost', 8000), CustomHandler)
+    print("Starting server at http://localhost:8000")
+    server.serve_forever()
 
 
 def main():
-    print("Press 'Space' to browse the next random link. Press 'Ctrl+C' to exit.")
-    while True:
-        # Wait for the Space key to be pressed
-        keyboard.wait('space')
-        browse_next_link()
+    # Generate the first random HTML
+    browse_next_link()
+
+    # Start the server in a separate thread
+    server_thread = threading.Thread(target=start_server)
+    server_thread.daemon = True
+    server_thread.start()
+
+    # Open the HTML file in the browser
+    webbrowser.open("http://localhost:8000/study_tool.html", new=2)  # Open in a new tab
+
+    # Wait for user input
+    print("Press 'Ctrl+C' to exit.")
+    try:
+        while True:
+            pass  # Keep script running
+    except KeyboardInterrupt:
+        print("\nExiting...")
 
 
 if __name__ == "__main__":
