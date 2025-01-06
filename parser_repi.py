@@ -18,7 +18,10 @@ def extract_filtered_links(url, pattern):
             absolute_link = urljoin(url, a_tag['href'])
             # filter by pattern
             if re.search(pattern, absolute_link):
-                links.append(absolute_link)
+                # Remove any letter after the last number before ".html", e.g r_xi_11b.html => r_xi_11.html
+                sanitized_link = re.sub(r'(\d)[a-zA-Z]+(?=\.html)', r'\1', absolute_link)
+                # debug: print(sanitized_link)
+                links.append(sanitized_link)
 
         return links
 
@@ -26,11 +29,11 @@ def extract_filtered_links(url, pattern):
         print(f"Fehler beim Abrufen der Seite: {e}")
         return []
 
-# webside
+# website
 url = "https://histodb11.usz.ch/pages/rep_inhalt.html"
 
-# pattern: link with "r_" or "ra_"
-pattern = r"/(r_|ra_)" 
+# search pattern: link with "r_"
+pattern = r"/r_"
 filtered_links = extract_filtered_links(url, pattern)
 
 
