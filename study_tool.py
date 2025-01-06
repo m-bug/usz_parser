@@ -7,9 +7,12 @@ import threading
 
 # File paths
 ALL_LINKS_FILE = 'all_links.txt'
+ALL_REPI_LINKS_FILE = 'repi_links.txt'
 VISITED_LINKS_FILE = 'visited_links.txt'
+VISITED_REPI_LINKS_FILE = 'visited_repi_links.txt'
 HTML_FILE = 'study_tool.html'
 BASE_URL = "https://histodb11.usz.ch/olat/img_zif.php?img="
+BASE_REPI_URL = "https://histodb11.usz.ch/pages/s_"
 
 
 def extract_image_name_from_url(url):
@@ -26,6 +29,21 @@ def build_image_url(image_name):
     Builds the image-only URL using the image name.
     """
     return BASE_URL + image_name
+
+def extract_slide_name_from_url(url):
+    """
+    Extracts the slide name from the given URL.
+    Example URL: https://histodb11.usz.ch/pages/R_IV_1.html -> returns "IV_1.html"
+    """
+    answer_url = urlparse(url)
+    slide_name = answer_url.path.split('/')[-1].replace('r_', '')
+    return slide_name
+
+def build_answer_url(slide_name):
+    """
+    Builds the result URL using the slide name.
+    """
+    return BASE_REPI_URL + slide_name
 
 
 def load_links(file_path):
@@ -55,7 +73,7 @@ def load_visited_links(visited_file):
         return []
 
 
-def generate_html(random_image_url, original_link):
+def generate_html(random_image_url, original_link, random_repi_link, answer_url):
     """
     Generates an HTML file with two buttons and a refresh option.
     """
@@ -115,6 +133,16 @@ def generate_html(random_image_url, original_link):
         <div id="loading" class="loading"></div>
         <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
+        <h1>Study Tool: Guess the Repi Image</h1>
+        <p>Click a button below to view the image and the solution.</p>
+        <div>
+            <button onclick="window.open('{random_repi_link}', '_blank')">View Random Repi Image</button>
+            <button onclick="window.open('{answer_url}', '_blank')">View Solution</button>
+        </div>
+        <button onclick="refreshPage()">Get Another Random Repi Link</button>
+        <div id="loading" class="loading"></div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
+
         <script>
             function refreshPage() {{
                 document.getElementById('loading').innerText = 'Loading...';
@@ -141,9 +169,12 @@ def browse_next_link():
     # Load links
     all_links = load_links(ALL_LINKS_FILE)
     visited_links = load_visited_links(VISITED_LINKS_FILE)
+    all_repi_links = load_links(ALL_REPI_LINKS_FILE)
+    visited_repi_links = load_visited_links(VISITED_REPI_LINKS_FILE)
 
     # Get unvisited links
     unvisited_links = [link for link in all_links if link not in visited_links]
+    unvisited_repi_links = [link for link in all_repi_links if link not in visited_repi_links]
 
     # Reset if all links are visited
     if not unvisited_links:
@@ -151,21 +182,32 @@ def browse_next_link():
         unvisited_links = all_links
         with open(VISITED_LINKS_FILE, 'w') as file:
             file.truncate(0)  # Clear the file
+    if not unvisited_repi_links:
+        print("All repi links have been visited. Resetting...")
+        unvisited_repi_links = all_repi_links
+        with open(VISITED_REPI_LINKS_FILE, 'w') as file:
+            file.truncate(0)  # Clear the file
 
     # Choose a random link from unvisited links
     random_link = random.choice(unvisited_links)
+    random_repi_link = random.choice(unvisited_repi_links)
 
     # Extract image name and build image-only URL
     image_name = extract_image_name_from_url(random_link)
     random_image_url = build_image_url(image_name)
 
+    # Extract slide name from the page URL and Build the answer URL
+    slide_name = extract_slide_name_from_url(random_repi_link)
+    answer_url = build_answer_url(slide_name)
+
     # Generate a custom HTML file
-    generate_html(random_image_url, random_link)
+    generate_html(random_image_url, random_link, random_repi_link, answer_url)
 
     print(f"Generated HTML for image: {image_name}")
 
     # Save the link to visited_links.txt
     save_visited_link(random_link, VISITED_LINKS_FILE)
+    save_visited_link(random_repi_link, VISITED_REPI_LINKS_FILE)
 
 
 def start_server():

@@ -77,7 +77,10 @@ def save_links_to_file(links, filename):
     """
     try:
         with open(filename, "w") as f:
-            for link in links:
+
+            filtered_links = [link for link in links if not link.endswith('#en')] #filters links that contain #en
+
+            for link in filtered_links:
                 f.write(link + "\n")
         logging.info(f"Saved {len(links)} links to {filename}.")
     except IOError as e:
