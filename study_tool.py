@@ -17,11 +17,37 @@ BASE_REPI_URL = "https://histodb11.usz.ch/pages/s_"
 
 def extract_image_name_from_url(url):
     """
-    Extracts the image name from the given URL.
+    Extracts the image name from the given URL. Handles exceptions for specific cases.
     """
+    # Mapping of exceptions
+    exception_map = {
+        "s_vii_30": "np_i_1",
+        "s_vii_31": "np_i_2",
+        "s_vii_32": "np_i_3",
+        "s_vii_33": "np_ii_1",
+        "s_vii_34": "np_ii_2",
+        "s_vii_35a": "np_ii_3a",
+        "s_vii_35b": "np_ii_3b",
+        "s_vii_35c": "np_ii_3c",
+        "s_vii_36": "np_ii_4",
+        "s_vii_37": "np_ii_5",
+        "s_vii_38": "np_ii_6",
+        "s_vii_39": "np_iii_1",
+        "s_vii_40": "np_iii_2",
+        "s_vii_41": "np_iii_3",
+        "s_vii_42": "np_iii_4",
+        "s_vii_43": "np_iii_5",
+        "s_vii_44": "np_iii_6",
+    }
+
+    # Extract the image name as per the general rule
     parsed_url = urlparse(url)
     image_name = parsed_url.path.split('/')[-1].replace('.html', '')
-    return image_name
+
+    print(image_name)
+
+    # Check if the image name has an exception
+    return exception_map.get(image_name, image_name)
 
 
 def build_image_url(image_name):
