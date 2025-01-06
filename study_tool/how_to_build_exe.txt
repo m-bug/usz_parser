@@ -1,0 +1,1 @@
+pyinstaller --onefile --add-data "all_links.txt;." --add-data "repi_links.txt;." --add-data "visited_links.txt;." --add-data "visited_repi_links.txt;." --add-data "study_tool.html;." study_tool.py

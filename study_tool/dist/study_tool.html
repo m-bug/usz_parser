@@ -1,0 +1,81 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Study Tool</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                text-align: center;
+                background-color: #f4f7f6;
+            }
+            h1 {
+                color: #333;
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+            button {
+                margin: 20px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                background-color: #007BFF;
+                color: white;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            .message {
+                font-size: 18px;
+                color: green;
+                margin-top: 20px;
+            }
+            .loading {
+                font-size: 18px;
+                color: #888;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Study Tool: Guess the Image</h1>
+        <p>Click a button below to view the image and the solution.</p>
+        <div>
+            <button onclick="window.open('https://histodb11.usz.ch/olat/img_zif.php?img=s_viii_16', '_blank')">View Random Image</button>
+            <button onclick="window.open('https://histodb11.usz.ch/pages/s_viii_16.html', '_blank')">View Solution</button>
+        </div>
+        <button onclick="refreshPage()">Get Another Random Link</button>
+        <div id="loading" class="loading"></div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
+
+        <h1>Study Tool: Guess the Repi Image</h1>
+        <p>Click a button below to view the image and the solution.</p>
+        <div>
+            <button onclick="window.open('https://histodb11.usz.ch/pages/r_ix_11.html', '_blank')">View Random Repi Image</button>
+            <button onclick="window.open('https://histodb11.usz.ch/pages/s_ix_11.html', '_blank')">View Solution</button>
+        </div>
+        <button onclick="refreshPage()">Get Another Random Repi Link</button>
+        <div id="loading" class="loading"></div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
+
+        <script>
+            function refreshPage() {
+                document.getElementById('loading').innerText = 'Loading...';
+                document.getElementById('message').style.display = 'none';
+
+                fetch('/refresh')
+                    .then(response => response.text())
+                    .then(data => {
+                        document.body.innerHTML = data;
+                    });
+            }
+        </script>
+    </body>
+    </html>
+    
