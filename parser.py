@@ -76,15 +76,16 @@ def save_links_to_file(links, filename):
     :param filename: Name of the file to save the links.
     """
     try:
+        # Open the file in write mode to empty it before writing
         with open(filename, "w") as f:
-
-            filtered_links = [link for link in links if not link.endswith('#en')] #filters links that contain #en
+            filtered_links = [link for link in links if not link.endswith('#en')]  # Filter out links ending with #en
 
             for link in filtered_links:
                 f.write(link + "\n")
-        logging.info(f"Saved {len(links)} links to {filename}.")
+        logging.info(f"Saved {len(filtered_links)} links to {filename}.")
     except IOError as e:
         logging.error(f"Failed to save links to {filename}: {e}")
+
 
 def main():
     # Configuration

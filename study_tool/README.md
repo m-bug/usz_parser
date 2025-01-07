@@ -12,10 +12,10 @@ study_tool
 │
 ├── all_links.txt
 ├── repi_links.txt
-├── visited_links.txt
-├── visited_repi_links.txt
-├── study_tool.html
-├── study_tool.exe
+├── visited_links.txt        # Created at runtime
+├── visited_repi_links.txt   # Created at runtime
+├── study_tool.html          # Created at runtime
+├── study_tool.app           # Generated executable
 ├── README.md
 ```
 
@@ -52,10 +52,10 @@ study_tool
 │
 ├── all_links.txt
 ├── repi_links.txt
-├── visited_links.txt
-├── visited_repi_links.txt
-├── study_tool.html
-├── study_tool.app [GENERATED]
+├── visited_links.txt        
+├── visited_repi_links.txt   
+├── study_tool.html          
+├── study_tool.app           
 ├── README.md
 ```
 

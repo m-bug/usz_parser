@@ -4,13 +4,27 @@ from urllib.parse import urlparse
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
+import os
+import sys
+
+def get_base_path():
+    """
+    Get the base path where the script or executable is running.
+    """
+    if getattr(sys, 'frozen', False):  # Check if the script is running as a frozen executable
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
 
 # File paths
-ALL_LINKS_FILE = 'all_links.txt'
-ALL_REPI_LINKS_FILE = 'repi_links.txt'
-VISITED_LINKS_FILE = 'visited_links.txt'
-VISITED_REPI_LINKS_FILE = 'visited_repi_links.txt'
-HTML_FILE = 'study_tool.html'
+BASE_PATH = get_base_path()
+
+ALL_LINKS_FILE = os.path.join(BASE_PATH, 'all_links.txt')
+ALL_REPI_LINKS_FILE = os.path.join(BASE_PATH, 'repi_links.txt')
+VISITED_LINKS_FILE = os.path.join(BASE_PATH, 'visited_links.txt')
+VISITED_REPI_LINKS_FILE = os.path.join(BASE_PATH, 'visited_repi_links.txt')
+HTML_FILE = os.path.join(BASE_PATH, 'study_tool.html')
+
+# some URL's
 BASE_URL = "https://histodb11.usz.ch/olat/img_zif.php?img="
 BASE_REPI_URL = "https://histodb11.usz.ch/pages/s_"
 
