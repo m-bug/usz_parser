@@ -174,19 +174,51 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
         <title>Study Tool</title>
         <style>
             body {{
-                font-family: Arial, sans-serif;
+                font-family: 'Arial', sans-serif;
                 margin: 0;
                 padding: 20px;
                 text-align: center;
                 background-color: #f4f7f6;
             }}
-            h1 {{
+
+            .container {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }}
+
+            .card {{
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                max-width: 400px;
+                width: 100%;
+            }}
+
+            .card h1 {{
                 color: #333;
-                font-size: 2rem;
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }}
+
+            .card p {{
+                color: #666;
+                font-size: 1rem;
                 margin-bottom: 20px;
             }}
+
+            .button-group {{
+                display: flex;
+                justify-content: space-around;
+                gap: 10px;
+                flex-wrap: wrap;
+            }}
+
             button {{
-                margin: 20px;
                 padding: 10px 20px;
                 font-size: 16px;
                 border: none;
@@ -194,50 +226,105 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
                 color: white;
                 border-radius: 5px;
                 cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }}
+
             button:hover {{
                 background-color: #0056b3;
+                transform: translateY(-2px);
             }}
-            .section {{
-                margin-bottom: 50px;
+
+            button i {{
+                font-size: 1.2rem;
+            }}
+
+            @media (max-width: 600px) {{
+                .card {{
+                    width: 90%;
+                }}
+
+                button {{
+                    flex: 1 1 auto;
+                }}
             }}
         </style>
     </head>
     <body>
-        <div class="section">
-            <h1>Guess the Image</h1>
-            <button onclick="window.open('{image_section_url}', '_blank')">View Random Image</button>
-            <button onclick="window.open('{solution_section_url}', '_blank')">View Solution</button>
-            <button onclick="refreshImage()">Refresh Image</button>
-        </div>
+        <div class="container">
+            <div class="card">
+                <h1>Study Tool: Guess the Image</h1>
+                <p>Click a button below to view the image and the solution.</p>
+                <div class="button-group">
+                    <button onclick="window.open('{image_section_url}', '_blank')">
+                        <i>📷</i> View Random Image
+                    </button>
+                    <button onclick="window.open('{solution_section_url}', '_blank')">
+                        <i>🔍</i> View Solution
+                    </button>
+                    <button onclick="refreshImage()">
+                        <i>🔄</i> Refresh Image
+                    </button>
+                </div>
+            </div>
 
-        <div class="section">
-            <h1>Guess the Repi Image</h1>
-            <button onclick="window.open('{repi_image_url}', '_blank')">View Random Repi Image</button>
-            <button onclick="window.open('{repi_solution_url}', '_blank')">View Solution</button>
-            <button onclick="refreshRepi()">Refresh Repi</button>
+            <div class="card">
+                <h1>Study Tool: Guess the Repi Image</h1>
+                <p>Click a button below to view the image and the solution.</p>
+                <div class="button-group">
+                    <button onclick="window.open('{repi_image_url}', '_blank')">
+                        <i>📷</i> View Random Repi Image
+                    </button>
+                    <button onclick="window.open('{repi_solution_url}', '_blank')">
+                        <i>🔍</i> View Solution
+                    </button>
+                    <button onclick="refreshRepi()">
+                        <i>🔄</i> Refresh Repi
+                    </button>
+                </div>
+            </div>
         </div>
+        <div id="loading" class="loading" style="display: none;">Loading...</div>
+        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
         <script>
             function refreshImage() {{
+                const loadingDiv = document.getElementById('loading');
+                loadingDiv.style.display = 'block';
                 fetch('/refresh_image')
                     .then(response => response.text())
-                    .then(data => {{
-                        document.body.innerHTML = data;
+                    .then(() => {{
+                        loadingDiv.style.display = 'none';
+                        alert('Image refreshed!');
+                    }})
+                    .catch(() => {{
+                        loadingDiv.style.display = 'none';
+                        alert('Failed to refresh image!');
                     }});
             }}
 
             function refreshRepi() {{
+                const loadingDiv = document.getElementById('loading');
+                loadingDiv.style.display = 'block';
                 fetch('/refresh_repi')
                     .then(response => response.text())
-                    .then(data => {{
-                        document.body.innerHTML = data;
+                    .then(() => {{
+                        loadingDiv.style.display = 'none';
+                        alert('Repi refreshed!');
+                    }})
+                    .catch(() => {{
+                        loadingDiv.style.display = 'none';
+                        alert('Failed to refresh repi!');
                     }});
             }}
         </script>
     </body>
     </html>
     """
+
+
     with open(HTML_FILE, 'w', encoding='utf-8') as file:
         file.write(html_content)
 
