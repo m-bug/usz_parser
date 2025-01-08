@@ -113,9 +113,57 @@ def load_visited_links(visited_file):
         return []
 
 
-def generate_html(random_image_url, original_link, random_repi_link, answer_url):
+def refresh_image_section():
     """
-    Generates an HTML file with two buttons and a refresh option.
+    Refreshes the random image section.
+    """
+    all_links = load_links(ALL_LINKS_FILE)
+    visited_links = load_visited_links(VISITED_LINKS_FILE)
+    unvisited_links = [link for link in all_links if link not in visited_links]
+
+    if not unvisited_links:
+        print("Resetting image links...")
+        unvisited_links = all_links
+        with open(VISITED_LINKS_FILE, 'w') as file:
+            file.truncate(0)
+
+    random_link = random.choice(unvisited_links)
+    image_name = extract_image_name_from_url(random_link)
+    random_image_url = build_image_url(image_name)
+
+    save_visited_link(random_link, VISITED_LINKS_FILE)
+
+    # Update the HTML
+    generate_html(random_image_url, random_link, None, None)
+
+
+def refresh_repi_section():
+    """
+    Refreshes the random repi section.
+    """
+    all_repi_links = load_links(ALL_REPI_LINKS_FILE)
+    visited_repi_links = load_visited_links(VISITED_REPI_LINKS_FILE)
+    unvisited_repi_links = [link for link in all_repi_links if link not in visited_repi_links]
+
+    if not unvisited_repi_links:
+        print("Resetting repi links...")
+        unvisited_repi_links = all_repi_links
+        with open(VISITED_REPI_LINKS_FILE, 'w') as file:
+            file.truncate(0)
+
+    random_repi_link = random.choice(unvisited_repi_links)
+    slide_name = extract_slide_name_from_url(random_repi_link)
+    answer_url = build_answer_url(slide_name)
+
+    save_visited_link(random_repi_link, VISITED_REPI_LINKS_FILE)
+
+    # Update the HTML
+    generate_html(None, None, random_repi_link, answer_url)
+
+
+def generate_html(image_section_url, solution_section_url, repi_image_url, repi_solution_url):
+    """
+    Generates an HTML file with independent sections for each link type.
     """
     html_content = f"""
     <!DOCTYPE html>
@@ -150,45 +198,37 @@ def generate_html(random_image_url, original_link, random_repi_link, answer_url)
             button:hover {{
                 background-color: #0056b3;
             }}
-            .message {{
-                font-size: 18px;
-                color: green;
-                margin-top: 20px;
-            }}
-            .loading {{
-                font-size: 18px;
-                color: #888;
-                margin-top: 20px;
+            .section {{
+                margin-bottom: 50px;
             }}
         </style>
     </head>
     <body>
-        <h1>Study Tool: Guess the Image</h1>
-        <p>Click a button below to view the image and the solution.</p>
-        <div>
-            <button onclick="window.open('{random_image_url}', '_blank')">View Random Image</button>
-            <button onclick="window.open('{original_link}', '_blank')">View Solution</button>
+        <div class="section">
+            <h1>Guess the Image</h1>
+            <button onclick="window.open('{image_section_url}', '_blank')">View Random Image</button>
+            <button onclick="window.open('{solution_section_url}', '_blank')">View Solution</button>
+            <button onclick="refreshImage()">Refresh Image</button>
         </div>
-        <button onclick="refreshPage()">Get Another Random Link</button>
-        <div id="loading" class="loading"></div>
-        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
-        <h1>Study Tool: Guess the Repi Image</h1>
-        <p>Click a button below to view the image and the solution.</p>
-        <div>
-            <button onclick="window.open('{random_repi_link}', '_blank')">View Random Repi Image</button>
-            <button onclick="window.open('{answer_url}', '_blank')">View Solution</button>
+        <div class="section">
+            <h1>Guess the Repi Image</h1>
+            <button onclick="window.open('{repi_image_url}', '_blank')">View Random Repi Image</button>
+            <button onclick="window.open('{repi_solution_url}', '_blank')">View Solution</button>
+            <button onclick="refreshRepi()">Refresh Repi</button>
         </div>
-        <button onclick="refreshPage()">Get Another Random Repi Link</button>
-        <div id="loading" class="loading"></div>
-        <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
         <script>
-            function refreshPage() {{
-                document.getElementById('loading').innerText = 'Loading...';
-                document.getElementById('message').style.display = 'none';
+            function refreshImage() {{
+                fetch('/refresh_image')
+                    .then(response => response.text())
+                    .then(data => {{
+                        document.body.innerHTML = data;
+                    }});
+            }}
 
-                fetch('/refresh')
+            function refreshRepi() {{
+                fetch('/refresh_repi')
                     .then(response => response.text())
                     .then(data => {{
                         document.body.innerHTML = data;
@@ -200,6 +240,7 @@ def generate_html(random_image_url, original_link, random_repi_link, answer_url)
     """
     with open(HTML_FILE, 'w', encoding='utf-8') as file:
         file.write(html_content)
+
 
 
 def browse_next_link():
@@ -256,15 +297,27 @@ def start_server():
     """
     class CustomHandler(SimpleHTTPRequestHandler):
         def do_GET(self):
-            if self.path == "/refresh":
-                browse_next_link()
+            if self.path == "/refresh_image":
+                # Refresh only the image section
+                refresh_image_section()
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
                 with open(HTML_FILE, 'r', encoding='utf-8') as file:
                     self.wfile.write(file.read().encode('utf-8'))
+
+            elif self.path == "/refresh_repi":
+                # Refresh only the repi section
+                refresh_repi_section()
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                with open(HTML_FILE, 'r', encoding='utf-8') as file:
+                    self.wfile.write(file.read().encode('utf-8'))
+
             else:
                 super().do_GET()
+
 
     server = HTTPServer(('localhost', 8000), CustomHandler)
     print("Starting server at http://localhost:8000")
