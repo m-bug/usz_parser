@@ -91,10 +91,10 @@
                 <h1>Study Tool: Guess the Image</h1>
                 <p>Click a button below to view the image and the solution.</p>
                 <div class="button-group">
-                    <button onclick="window.open('https://histodb11.usz.ch/olat/img_zif.php?img=s_iii_9', '_blank')">
+                    <button onclick="window.open('https://histodb11.usz.ch/olat/img_zif.php?img=s_iv_5', '_blank')">
                         <i>📷</i> View Random Image
                     </button>
-                    <button onclick="window.open('https://histodb11.usz.ch/pages/s_iii_9.html', '_blank')">
+                    <button onclick="window.open('https://histodb11.usz.ch/pages/s_iv_5.html', '_blank')">
                         <i>🔍</i> View Solution
                     </button>
                     <button onclick="refreshImage()">
@@ -107,10 +107,10 @@
                 <h1>Study Tool: Guess the Repi Image</h1>
                 <p>Click a button below to view the image and the solution.</p>
                 <div class="button-group">
-                    <button onclick="window.open('https://histodb11.usz.ch/pages/r_i_24.html', '_blank')">
+                    <button onclick="window.open('None', '_blank')">
                         <i>📷</i> View Random Repi Image
                     </button>
-                    <button onclick="window.open('https://histodb11.usz.ch/pages/s_i_24.html', '_blank')">
+                    <button onclick="window.open('None', '_blank')">
                         <i>🔍</i> View Solution
                     </button>
                     <button onclick="refreshRepi()">
@@ -123,35 +123,39 @@
         <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
         <script>
-            function refreshImage() {
-                const loadingDiv = document.getElementById('loading');
-                loadingDiv.style.display = 'block';
-                fetch('/refresh_image')
-                    .then(response => response.text())
-                    .then(() => {
-                        loadingDiv.style.display = 'none';
-                        alert('Image refreshed!');
-                    })
-                    .catch(() => {
-                        loadingDiv.style.display = 'none';
-                        alert('Failed to refresh image!');
-                    });
-            }
+    function refreshImage() {
+        fetch('/refresh_image')
+            .then(response => response.json())
+            .then(data => {
+                // Update the button or display for the random image link
+                const imageButton = document.querySelector('.button-group button:first-child');
+                if (imageButton) {
+                    imageButton.setAttribute('onclick', `window.open('${data.image_url}', '_blank')`);
+                }
+            })
+            .catch(() => {
+                alert('Failed to refresh image!');
+            });
+    }
 
-            function refreshRepi() {
-                const loadingDiv = document.getElementById('loading');
-                loadingDiv.style.display = 'block';
-                fetch('/refresh_repi')
-                    .then(response => response.text())
-                    .then(() => {
-                        loadingDiv.style.display = 'none';
-                        alert('Repi refreshed!');
-                    })
-                    .catch(() => {
-                        loadingDiv.style.display = 'none';
-                        alert('Failed to refresh repi!');
-                    });
-            }
+    function refreshRepi() {
+        fetch('/refresh_repi')
+            .then(response => response.json())
+            .then(data => {
+                // Update the buttons or displays for the repi links
+                const repiButton = document.querySelector('.button-group button:nth-child(3)');
+                const solutionButton = document.querySelector('.button-group button:nth-child(4)');
+                if (repiButton) {
+                    repiButton.setAttribute('onclick', `window.open('${data.repi_url}', '_blank')`);
+                }
+                if (solutionButton) {
+                    solutionButton.setAttribute('onclick', `window.open('${data.solution_url}', '_blank')`);
+                }
+            })
+            .catch(() => {
+                alert('Failed to refresh repi!');
+            });
+    }
         </script>
     </body>
     </html>

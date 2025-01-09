@@ -290,39 +290,44 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
         <div id="message" class="message" style="display: none;">Random Link Updated!</div>
 
         <script>
-            function refreshImage() {{
-                const loadingDiv = document.getElementById('loading');
-                loadingDiv.style.display = 'block';
-                fetch('/refresh_image')
-                    .then(response => response.text())
-                    .then(() => {{
-                        loadingDiv.style.display = 'none';
-                        alert('Image refreshed!');
-                    }})
-                    .catch(() => {{
-                        loadingDiv.style.display = 'none';
-                        alert('Failed to refresh image!');
-                    }});
-            }}
+    function refreshImage() {{
+        fetch('/refresh_image')
+            .then(response => response.json())
+            .then(data => {{
+                // Update the button or display for the random image link
+                const imageButton = document.querySelector('.button-group button:first-child');
+                if (imageButton) {{
+                    imageButton.setAttribute('onclick', `window.open('${{data.image_url}}', '_blank')`);
+                }}
+            }})
+            .catch(() => {{
+                alert('Failed to refresh image!');
+            }});
+    }}
 
-            function refreshRepi() {{
-                const loadingDiv = document.getElementById('loading');
-                loadingDiv.style.display = 'block';
-                fetch('/refresh_repi')
-                    .then(response => response.text())
-                    .then(() => {{
-                        loadingDiv.style.display = 'none';
-                        alert('Repi refreshed!');
-                    }})
-                    .catch(() => {{
-                        loadingDiv.style.display = 'none';
-                        alert('Failed to refresh repi!');
-                    }});
-            }}
+    function refreshRepi() {{
+        fetch('/refresh_repi')
+            .then(response => response.json())
+            .then(data => {{
+                // Update the buttons or displays for the repi links
+                const repiButton = document.querySelector('.button-group button:nth-child(3)');
+                const solutionButton = document.querySelector('.button-group button:nth-child(4)');
+                if (repiButton) {{
+                    repiButton.setAttribute('onclick', `window.open('${{data.repi_url}}', '_blank')`);
+                }}
+                if (solutionButton) {{
+                    solutionButton.setAttribute('onclick', `window.open('${{data.solution_url}}', '_blank')`);
+                }}
+            }})
+            .catch(() => {{
+                alert('Failed to refresh repi!');
+            }});
+    }}
         </script>
     </body>
     </html>
     """
+
 
 
     with open(HTML_FILE, 'w', encoding='utf-8') as file:
@@ -385,25 +390,49 @@ def start_server():
     class CustomHandler(SimpleHTTPRequestHandler):
         def do_GET(self):
             if self.path == "/refresh_image":
-                # Refresh only the image section
                 refresh_image_section()
-                self.send_response(200)
-                self.send_header("Content-type", "text/html")
-                self.end_headers()
-                with open(HTML_FILE, 'r', encoding='utf-8') as file:
-                    self.wfile.write(file.read().encode('utf-8'))
+                all_links = load_links(ALL_LINKS_FILE)
+                visited_links = load_visited_links(VISITED_LINKS_FILE)
+                unvisited_links = [link for link in all_links if link not in visited_links]
 
+                if not unvisited_links:
+                    unvisited_links = all_links
+
+                random_link = random.choice(unvisited_links)
+                image_name = extract_image_name_from_url(random_link)
+                random_image_url = build_image_url(image_name)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(f'{{"image_url": "{random_image_url}"}}'.encode('utf-8'))
+            
             elif self.path == "/refresh_repi":
-                # Refresh only the repi section
                 refresh_repi_section()
+                all_repi_links = load_links(ALL_REPI_LINKS_FILE)
+                visited_repi_links = load_visited_links(VISITED_REPI_LINKS_FILE)
+                unvisited_repi_links = [link for link in all_repi_links if link not in visited_repi_links]
+
+                if not unvisited_repi_links:
+                    unvisited_repi_links = all_repi_links
+
+                random_repi_link = random.choice(unvisited_repi_links)
+                slide_name = extract_slide_name_from_url(random_repi_link)
+                repi_solution_url = build_answer_url(slide_name)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(f'{{"repi_url": "{random_repi_link}", "solution_url": "{repi_solution_url}"}}'.encode('utf-8'))
+            
+            elif self.path == "/study_tool.html":
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
                 with open(HTML_FILE, 'r', encoding='utf-8') as file:
                     self.wfile.write(file.read().encode('utf-8'))
-
+            
             else:
                 super().do_GET()
+
 
 
     server = HTTPServer(('localhost', 8000), CustomHandler)
