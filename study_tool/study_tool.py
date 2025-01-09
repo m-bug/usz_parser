@@ -274,10 +274,10 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
                 <h1>Study Tool: Guess the Repi Image</h1>
                 <p>Click a button below to view the image and the solution.</p>
                 <div class="button-group">
-                    <button onclick="window.open('{repi_image_url}', '_blank')">
+                    <button id="repiImageButton" onclick="window.open('{repi_image_url}', '_blank')">
                         <i>📷</i> View Random Repi Image
                     </button>
-                    <button onclick="window.open('{repi_solution_url}', '_blank')">
+                    <button id="repiSolutionButton" onclick="window.open('{repi_solution_url}', '_blank')">
                         <i>🔍</i> View Solution
                     </button>
                     <button onclick="refreshRepi()">
@@ -309,20 +309,20 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
         fetch('/refresh_repi')
             .then(response => response.json())
             .then(data => {{
-                // Update the buttons or displays for the repi links
-                const repiButton = document.querySelector('.button-group button:nth-child(3)');
-                const solutionButton = document.querySelector('.button-group button:nth-child(4)');
-                if (repiButton) {{
-                    repiButton.setAttribute('onclick', `window.open('${{data.repi_url}}', '_blank')`);
+                const repiImageButton = document.getElementById('repiImageButton');
+                const repiSolutionButton = document.getElementById('repiSolutionButton');
+                if (repiImageButton) {{
+                    repiImageButton.setAttribute('onclick', `window.open('${{data.repi_url}}', '_blank')`);
                 }}
-                if (solutionButton) {{
-                    solutionButton.setAttribute('onclick', `window.open('${{data.solution_url}}', '_blank')`);
+                if (repiSolutionButton) {{
+                    repiSolutionButton.setAttribute('onclick', `window.open('${{data.solution_url}}', '_blank')`);
                 }}
             }})
             .catch(() => {{
                 alert('Failed to refresh repi!');
             }});
     }}
+
         </script>
     </body>
     </html>
