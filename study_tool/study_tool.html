@@ -91,10 +91,10 @@
                 <h1>Study Tool: Guess the Image</h1>
                 <p>Click a button below to view the image and the solution.</p>
                 <div class="button-group">
-                    <button onclick="window.open('None', '_blank')">
+                    <button onclick="window.open('https://histodb11.usz.ch/olat/img_zif.php?img=s_xii_5', '_blank')">
                         <i>📷</i> View Random Image
                     </button>
-                    <button onclick="window.open('None', '_blank')">
+                    <button onclick="window.open('https://histodb11.usz.ch/pages/s_xii_5.html', '_blank')">
                         <i>🔍</i> View Solution
                     </button>
                     <button onclick="refreshImage()">
@@ -107,10 +107,10 @@
                 <h1>Study Tool: Guess the Repi Image</h1>
                 <p>Click a button below to view the image and the solution.</p>
                 <div class="button-group">
-                    <button id="repiImageButton" onclick="window.open('https://histodb11.usz.ch/pages/r_iv_7.html', '_blank')">
+                    <button id="repiImageButton" onclick="window.open('None', '_blank')">
                         <i>📷</i> View Random Repi Image
                     </button>
-                    <button id="repiSolutionButton" onclick="window.open('https://histodb11.usz.ch/pages/s_iv_7.html', '_blank')">
+                    <button id="repiSolutionButton" onclick="window.open('None', '_blank')">
                         <i>🔍</i> View Solution
                     </button>
                     <button onclick="refreshRepi()">
@@ -129,14 +129,23 @@
             .then(data => {
                 // Update the button or display for the random image link
                 const imageButton = document.querySelector('.button-group button:first-child');
+                const solutionButton = document.querySelector('.button-group button:nth-child(2)');
+
+                // Check if the image button exists and update its onclick link
                 if (imageButton) {
                     imageButton.setAttribute('onclick', `window.open('${data.image_url}', '_blank')`);
+                }
+
+                // Check if the solution button exists and update its onclick link
+                if (solutionButton) {
+                    solutionButton.setAttribute('onclick', `window.open('${data.solution_url}', '_blank')`);
                 }
             })
             .catch(() => {
                 alert('Failed to refresh image!');
             });
     }
+
 
     function refreshRepi() {
         fetch('/refresh_repi')

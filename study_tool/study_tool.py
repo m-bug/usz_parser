@@ -77,6 +77,7 @@ def extract_slide_name_from_url(url):
     """
     answer_url = urlparse(url)
     slide_name = answer_url.path.split('/')[-1].replace('r_', '')
+    print(slide_name)
     return slide_name
 
 def build_answer_url(slide_name):
@@ -128,9 +129,16 @@ def refresh_image_section():
             file.truncate(0)
 
     random_link = random.choice(unvisited_links)
+    
     image_name = extract_image_name_from_url(random_link)
     random_image_url = build_image_url(image_name)
-
+    print(random_image_url)
+    print(random_link)
+    
+    random_link = random_link.replace('/s_h', '/h')
+    random_link = random_link.replace('/s_s', '/s')
+    
+    
     save_visited_link(random_link, VISITED_LINKS_FILE)
 
     # Update the HTML
@@ -296,14 +304,23 @@ def generate_html(image_section_url, solution_section_url, repi_image_url, repi_
             .then(data => {{
                 // Update the button or display for the random image link
                 const imageButton = document.querySelector('.button-group button:first-child');
+                const solutionButton = document.querySelector('.button-group button:nth-child(2)');
+
+                // Check if the image button exists and update its onclick link
                 if (imageButton) {{
                     imageButton.setAttribute('onclick', `window.open('${{data.image_url}}', '_blank')`);
+                }}
+
+                // Check if the solution button exists and update its onclick link
+                if (solutionButton) {{
+                    solutionButton.setAttribute('onclick', `window.open('${{data.solution_url}}', '_blank')`);
                 }}
             }})
             .catch(() => {{
                 alert('Failed to refresh image!');
             }});
     }}
+
 
     function refreshRepi() {{
         fetch('/refresh_repi')
@@ -401,11 +418,16 @@ def start_server():
                 random_link = random.choice(unvisited_links)
                 image_name = extract_image_name_from_url(random_link)
                 random_image_url = build_image_url(image_name)
+
+                # Assuming solution URL is linked to the same random link
+                slide_name = extract_slide_name_from_url(random_link)
+                solution_url = build_answer_url(slide_name)
+
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                self.wfile.write(f'{{"image_url": "{random_image_url}"}}'.encode('utf-8'))
-            
+                self.wfile.write(f'{{"image_url": "{random_image_url}", "solution_url": "{solution_url}"}}'.encode('utf-8'))
+
             elif self.path == "/refresh_repi":
                 refresh_repi_section()
                 all_repi_links = load_links(ALL_REPI_LINKS_FILE)
@@ -422,16 +444,17 @@ def start_server():
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(f'{{"repi_url": "{random_repi_link}", "solution_url": "{repi_solution_url}"}}'.encode('utf-8'))
-            
+
             elif self.path == "/study_tool.html":
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
                 with open(HTML_FILE, 'r', encoding='utf-8') as file:
                     self.wfile.write(file.read().encode('utf-8'))
-            
+
             else:
                 super().do_GET()
+
 
 
 
