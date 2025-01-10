@@ -421,7 +421,7 @@ def start_server():
 
                 # Assuming solution URL is linked to the same random link
                 slide_name = extract_slide_name_from_url(random_link)
-                solution_url = build_answer_url(slide_name)
+                solution_url = random_link
 
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
