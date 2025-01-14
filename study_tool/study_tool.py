@@ -422,7 +422,7 @@ def start_server():
                 random_image_url = build_image_url(image_name)
 
                 # Assuming solution URL is linked to the same random link
-                slide_name = extract_slide_name_from_url(random_link)
+                # slide_name = extract_slide_name_from_url(random_link)
                 solution_url = random_link
 
                 self.send_response(200)
