@@ -59,7 +59,7 @@ def extract_image_name_from_url(url):
     parsed_url = urlparse(url)
     image_name = parsed_url.path.split('/')[-1].replace('.html', '')
 
-    print(image_name)
+    print(f"extract_image_name_from_url: {image_name}")
 
     # Check if the image name has an exception
     return exception_map.get(image_name, image_name)
@@ -79,7 +79,7 @@ def extract_slide_name_from_url(url):
     answer_url = urlparse(url)
     slide_name = answer_url.path.split('/')[-1].replace('r_', '')
     sanitized_link = re.sub(r'(\d)[a-zA-Z]+(?=\.html)', r'\1', slide_name)
-    print(sanitized_link)
+    print(f"extract_slide_name_from_url - Repi: {sanitized_link}")
     return sanitized_link
 
 def build_answer_url(slide_name):
@@ -134,8 +134,8 @@ def refresh_image_section():
     
     image_name = extract_image_name_from_url(random_link)
     random_image_url = build_image_url(image_name)
-    print(random_image_url)
-    print(random_link)
+    print(f"Refresh_image_section - random_image_url: {random_image_url}")
+    print(f"refresh_image_section - random_link: {random_link}")
     
     random_link = random_link.replace('/s_h', '/h')
     random_link = random_link.replace('/s_s', '/s')
