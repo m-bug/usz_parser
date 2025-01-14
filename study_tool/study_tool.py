@@ -6,6 +6,7 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 import os
 import sys
+import re
 
 def get_base_path():
     """
@@ -77,8 +78,9 @@ def extract_slide_name_from_url(url):
     """
     answer_url = urlparse(url)
     slide_name = answer_url.path.split('/')[-1].replace('r_', '')
-    print(slide_name)
-    return slide_name
+    sanitized_link = re.sub(r'(\d)[a-zA-Z]+(?=\.html)', r'\1', slide_name)
+    print(sanitized_link)
+    return sanitized_link
 
 def build_answer_url(slide_name):
     """
